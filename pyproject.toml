@@ -1,0 +1,23 @@
+[project]
+name = "iax-agrag-agui-lab"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Pablo Vagliati",email = "jvagliat@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13,<=3.13.1"
+dependencies = [
+    "google-adk (>=1.15.1,<2.0.0)",
+    "openai (>=2.1.0,<3.0.0)",
+    "litellm (>=1.77.7,<2.0.0)",
+    "langfuse (>=3.6.1,<4.0.0)",
+    "neo4j (>=6.0.2,<7.0.0)",
+    "adk-agui-middleware @ git+https://github.com/jvagliat/iax-adk-agui-middleware.git",
+    "ag-ui-protocol (>=0.1.9,<0.2.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
