@@ -102,7 +102,7 @@ async def format_thread_list(session_list: list[Session]) -> list[dict[str, Any]
 
 
 # Instantiate your agent and minimal middleware wiring
-from hello_agent import hello_agent 
+from src.iax_agrag_agui_lab.agents.hello_agent import hello_agent 
 agent: Any = hello_agent  # Replace with your BaseAgent instance
 
 # Configuration for in-memory services (suitable for development/testing)

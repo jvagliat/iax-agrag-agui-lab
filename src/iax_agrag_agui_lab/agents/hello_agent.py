@@ -34,7 +34,7 @@ langfuse = Langfuse(
   host="https://us.cloud.langfuse.com"
 )
 # Convenience libraries for working with Neo4j inside of Google ADK
-from neo4j_for_adk import graphdb
+from data.neo4j_for_adk import graphdb
 # Define Model Constants for easier use 
 MODEL_GPT = "openai/gpt-4o"
 
