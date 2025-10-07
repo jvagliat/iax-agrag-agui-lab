@@ -42,11 +42,10 @@ triage_agent = LlmAgent(
     asistente especializado en iattraxia/IAX y ofrece ayuda.
 
     **Si es SPECIFIC**: Di algo como "Déjame buscar esa información en la documentación..."
-    y luego USA transfer_to_agent para llamar a 'QueryGeneratorAgent'.
 
     Sé conversacional y amigable.
     """,
-    output_key="triage_result",
+    output_key="TriageAgent.triage_result",
     sub_agents=[]  # Se configurará después
 )
 
@@ -69,16 +68,17 @@ query_generator_agent = LlmAgent(
     - **Complementarias**: Cubrir diferentes ángulos de la misma necesidad
 
     **Formato de salida**:
-    Devuelve SOLO las 3 consultas, una por línea, sin numeración ni explicaciones adicionales.
+    Devuelve SOLO las 3 consultas en un array de strings, sin explicaciones ni texto adicional.
 
     Ejemplo de salida esperada:
-    funcionalidades de la plataforma IAX
-    arquitectura y componentes del sistema IAX
-    casos de uso de agentes autónomos en IAX
+    [
+        "funcionalidades de la plataforma IAX",
+        "arquitectura y componentes del sistema IAX",
+        "casos de uso de agentes autónomos en IAX"
+    ]
 
-    Después de generar las consultas, USA transfer_to_agent para llamar a 'MultiRetrievalAgent'.
     """,
-    output_key="generated_queries",
+    output_key="QueryGeneratorAgent.generated_queries",
     sub_agents=[]  # Se configurará después
 )
 
@@ -91,20 +91,18 @@ multi_retrieval_agent = LlmAgent(
     instruction="""
     Eres un experto en recuperación de información.
 
-    Las consultas generadas están en: {generated_queries}
+    Las consultas generadas están en: {QueryGeneratorAgent.generated_queries}
 
     **Tu trabajo**:
     1. Lee las 3 consultas generadas
     2. USA la herramienta `vector_search` con CADA una de las 3 consultas
     3. Recopila todos los resultados obtenidos
-    4. Si obtienes resultados relevantes, transfiere a 'SynthesizerAgent' con transfer_to_agent
-    5. Si no encuentras nada útil en ninguna consulta, díselo al usuario educadamente
 
     **Importante**:
     - Ejecuta las 3 búsquedas aunque algunas den resultados
     - Los resultados combinados darán mejor cobertura al Synthesizer
     """,
-    output_key="retrieved_chunks",
+    output_key="MultiRetrievalAgent.retrieved_chunks",
     tools=[vector_search_tool],
     sub_agents=[]  # Se configurará después
 )
@@ -141,7 +139,7 @@ synthesizer_agent = LlmAgent(
     - Adapta longitud según complejidad (1 párrafo a 5 párrafos máximo)
     - Si no hay suficiente información, admítelo y sugiere reformular la pregunta
     """,
-    output_key="final_response"
+    output_key="MultiRetrievalAgent.final_response"
 )
 
 
