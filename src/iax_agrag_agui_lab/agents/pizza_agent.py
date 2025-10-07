@@ -62,6 +62,27 @@ kitchen_pipeline = SequentialAgent(
     name="KitchenPipeline",
     sub_agents=[chef, delivery]
 )
+from google.adk.agents import Agent
+from google.adk.agents.callback_context import CallbackContext
+from typing import Optional
+
+def initialize_session_state(callback_context: CallbackContext, **kwargs) -> Optional[any]:
+    """Inicializa estado con valores por defecto para el agente"""
+    
+    default_state = {
+        "pizza_created": False,
+        "delivery_info": "null",
+        "order_history": [],
+        # Agrega más campos según necesites
+    }
+    
+    # Inicializar solo los campos que faltan
+    for key, default_value in default_state.items():
+        if key not in callback_context.state:
+            callback_context.state[key] = default_value
+            print(f"✅ Inicializado {key} = {default_value}")
+    
+    return None
 
 # 🎯 CAJERO - Conversacional, coordina todo (ahora SIN referencias a variables inexistentes)
 cajero = LlmAgent(
@@ -105,7 +126,8 @@ cajero = LlmAgent(
     Importante: Siempre utiliza markdown para formatear tu respuesta.
     """,
     sub_agents=[kitchen_pipeline], 
-    
+    before_agent_callback=initialize_session_state,  # ← Callback que inicializa estado
+
 )
 
 # 🎮 AGENTE PRINCIPAL (este es el que expones en tu servidor)

@@ -74,27 +74,27 @@ class AdkAguiAgentServer:
             state= {
                 **initialState
             }
-        
-        
         )
         # Main configuration context for the SSE service
         self.config_context = ConfigContext(
             app_name=self.app_name,  # Application identifier
             user_id=self.extract_user_id_main,  # User ID extraction for main endpoint
+            session_id=self.session_id,  # Fixed session ID for simplicity
         )
 
         # SSE service handles the main chat/agent interaction endpoint
         self.sse_service = SSEService(
             agent=self.agent,  # The agent that processes user requests
             config_context=self.config_context,  # Context extraction configuration
-        )
+            )
 
         # History service manages conversation threads and message history
         self.history_service = HistoryService(
             HistoryConfig(
-                app_name="demo-app",  # Must match SSE service app name
+                app_name=self.app_name,  # Must match SSE service app name
                 user_id=self.extract_user_id_history,  # User ID extraction for history endpoints
-                session_id=self.session.id if self.session else self.extract_session_id_history,  # Session/thread ID extraction
+                # session_id=self.extract_session_id_history,  # Session/thread ID extraction
+                session_id=self.session_id,
                 get_thread_list=self.format_thread_list,  # Custom thread list formatting
             )
         )
@@ -102,9 +102,9 @@ class AdkAguiAgentServer:
         # State service manages session state persistence and retrieval
         self.state_service = StateService(
             StateConfig(
-                app_name="demo-app",  # Must match SSE service app name
+                app_name=self.app_name,  # Must match SSE service app name
                 user_id=self.extract_user_id_history,  # User ID extraction for state endpoints
-                session_id=self.session.id if self.session else self.extract_session_id_history,  # Session/thread ID extraction
+                session_id=self.session_id,  # Fixed session ID for simplicity
             )
         )
 
