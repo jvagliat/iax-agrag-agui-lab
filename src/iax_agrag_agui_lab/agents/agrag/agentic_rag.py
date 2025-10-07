@@ -7,61 +7,11 @@ from google.adk.agents import LlmAgent, SequentialAgent
 from google.adk.tools import FunctionTool
 from typing import Any
 
+from agents.agrag.query_docs_tool import query_iax_documentation_rag
 
-# ==================== MOCK TOOLS ====================
-
-def mock_vector_search(query: str, top_k: int = 3) -> str:
-    """Mock de búsqueda vectorial - retorna chunks simulados"""
-    # Base de datos mock de documentación técnica
-    mock_db = {
-        "python": [
-            {"content": "Python es un lenguaje de programación interpretado de alto nivel. Creado por Guido van Rossum en 1991.", "source": "python_intro.md:1-2"},
-            {"content": "Python usa tipado dinámico y gestión automática de memoria. Soporta múltiples paradigmas: orientado a objetos, imperativo, funcional.", "source": "python_features.md:5-7"},
-            {"content": "Para instalar paquetes en Python se usa pip: 'pip install nombre-paquete'. El gestor de entornos virtuales más común es venv.", "source": "python_tools.md:12-15"}
-        ],
-        "javascript": [
-            {"content": "JavaScript es un lenguaje de programación que se ejecuta principalmente en navegadores web. Creado por Brendan Eich en 1995.", "source": "js_intro.md:1-2"},
-            {"content": "JavaScript usa eventos y callbacks para manejar asincronía. Las promesas y async/await simplifican el código asíncrono.", "source": "js_async.md:8-10"},
-            {"content": "Node.js permite ejecutar JavaScript en el servidor. NPM es el gestor de paquetes estándar.", "source": "js_runtime.md:3-5"}
-        ],
-        "adk": [
-            {"content": "Google ADK (Agent Development Kit) es un framework para construir agentes LLM jerárquicos. Los agentes pueden coordinarse usando transfer_to_agent.", "source": "adk_overview.md:1-3"},
-            {"content": "Los agentes ADK comparten estado mediante session state (dict). Se accede con {variable_name} en las instrucciones.", "source": "adk_state.md:10-12"},
-            {"content": "Para crear un agente básico: LlmAgent(name='Agent', model='gemini-2.0-flash', instruction='...', output_key='result').", "source": "adk_quickstart.md:15-17"}
-        ],
-        "default": [
-            {"content": "Documentación general del sistema. Esta es una base de conocimiento de ejemplo para demostrar el sistema de RAG agéntico.", "source": "README.md:1"},
-            {"content": "El sistema incluye documentación sobre múltiples lenguajes de programación y frameworks.", "source": "index.md:5"},
-        ]
-    }
-
-    # Selección simple basada en keywords
-    query_lower = query.lower()
-    selected_docs = mock_db["default"]
-
-    if "python" in query_lower or "pip" in query_lower or "venv" in query_lower:
-        selected_docs = mock_db["python"]
-    elif "javascript" in query_lower or "js" in query_lower or "node" in query_lower:
-        selected_docs = mock_db["javascript"]
-    elif "adk" in query_lower or "agente" in query_lower or "agent" in query_lower:
-        selected_docs = mock_db["adk"]
-
-    # Limitar a top_k resultados
-    results = selected_docs[:top_k]
-
-    # Formatear resultados
-    formatted = "\n\n".join([
-        f"[{i+1}] {doc['content']}\nFuente: {doc['source']}"
-        for i, doc in enumerate(results)
-    ])
-
-    return formatted
-
-
+# ==================== HERRAMIENTAS ====================
 vector_search_tool = FunctionTool(
-    func=mock_vector_search,
-    # name="vector_search",
-    # description="Busca información en la base de conocimiento vectorial. Retorna chunks relevantes con sus fuentes."
+    func=query_iax_documentation_rag,
 )
 
 

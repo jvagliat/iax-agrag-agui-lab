@@ -32,7 +32,7 @@ configure_console_logging()
 
 from agents.coordinator_agent import coordinator
 from agents.pizza_agent import pizzeria_bot
-from agents.agentic_rag import agentic_rag_bot
+from agents.agrag.agentic_rag import agentic_rag_bot
 
 
 @asynccontextmanager
