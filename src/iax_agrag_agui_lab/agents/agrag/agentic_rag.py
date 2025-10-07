@@ -14,7 +14,6 @@ vector_search_tool = FunctionTool(
     func=query_iax_documentation_rag,
 )
 
-
 # ==================== AGENTES ====================
 
 # 1️⃣ TRIAGE AGENT - Clasifica consultas
@@ -30,8 +29,8 @@ triage_agent = LlmAgent(
     - **GENERAL**: Saludos, preguntas simples, conversación casual
       Ejemplos: "hola", "¿cómo estás?", "gracias", "¿qué puedes hacer?"
 
-    - **SPECIFIC**: Preguntas técnicas que requieren buscar en documentación
-      Ejemplos: "¿cómo instalar Python?", "explica async en JS", "qué es ADK"
+    - **SPECIFIC**: Preguntas especificas sobre la empresa, iattraxia o sus servicios, 
+    o aspectos relacionados con la plataforma IAX, desarrollo de software, IA, Agentes o automatizaciones. 
 
     **Si es GENERAL**: Responde directamente de forma amigable y breve.
 
@@ -66,6 +65,7 @@ retrieval_agent = LlmAgent(
     """,
     output_key="retrieved_chunks",
     tools=[vector_search_tool],
+
     sub_agents=[]  # Se configurará después
 )
 
@@ -89,12 +89,14 @@ synthesizer_agent = LlmAgent(
     5. Usa un tono profesional pero amigable
 
     **Formato de respuesta**:
+    - Markdown bien especificado y delimitado
     - Párrafo principal respondiendo la pregunta
     - Información adicional relevante (si aplica)
     - Línea en blanco
     - 📚 Fuentes: [lista de fuentes citadas]
 
     NO inventes información que no esté en los chunks.
+
     """,
     output_key="final_response"
 )

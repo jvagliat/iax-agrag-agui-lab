@@ -34,21 +34,41 @@ from agents.coordinator_agent import coordinator
 from agents.pizza_agent import pizzeria_bot
 from agents.agrag.agentic_rag import agentic_rag_bot
 
+from agents.agrag.agentic_rag_multi_query import agentic_rag_multi_query_bot
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    await AdkAguiAgentServer(hello_agent, agui_main_path="/hello-adk-agui").register_app(
-        app, initialState={}
-    )
+    await AdkAguiAgentServer(
+        hello_agent, agui_main_path="/hello-adk-agui"
+    ).register_app(app, initialState={})
     await AdkAguiAgentServer(coordinator, agui_main_path="/coordinator").register_app(
         app, initialState={}
     )
     await AdkAguiAgentServer(pizzeria_bot, agui_main_path="/pizza").register_app(
         app, initialState={"pizza_created": False, "delivery_info": "null"}
     )
-    await AdkAguiAgentServer(agentic_rag_bot, agui_main_path="/agentic-rag").register_app(
-        app, initialState={"triage_result": "", "retrieved_chunks": "", "final_response": ""}
+    await AdkAguiAgentServer(
+        agentic_rag_bot, agui_main_path="/agentic-rag"
+    ).register_app(
+        app,
+        initialState={
+            "triage_result": "",
+            "retrieved_chunks": "",
+            "final_response": "",
+        },
+    )
+
+    await AdkAguiAgentServer(
+        agentic_rag_multi_query_bot, agui_main_path="/mq-agentic-rag"
+    ).register_app(
+        app,
+        initialState={
+            "triage_result": "",
+            "retrieved_chunks": "",
+            "final_response": "",
+        },
     )
     yield
     # Shutdown (si necesitas limpiar algo)

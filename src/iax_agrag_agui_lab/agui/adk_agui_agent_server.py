@@ -80,6 +80,9 @@ class AdkAguiAgentServer:
             app_name=self.app_name,  # Application identifier
             user_id=self.extract_user_id_main,  # User ID extraction for main endpoint
             session_id=self.session_id,  # Fixed session ID for simplicity
+
+        
+            event_source_response_mode=False,  # Enable EventSourceResponse mode
         )
 
         # SSE service handles the main chat/agent interaction endpoint
