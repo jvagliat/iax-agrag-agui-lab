@@ -6,22 +6,24 @@ from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
 from google.genai import types # For creating message Content/Parts
 from typing import Optional, Dict, Any
+import os
+from dotenv import load_dotenv
 
 import warnings
-warnings.filterwarnings("ignore")
-
 import logging
+
+
+load_dotenv()
+
+import logfire
+from langfuse import Langfuse
+
+warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.CRITICAL)
 
-print("Libraries imported.")
+logfire.configure(token=os.getenv("LOGFIRE_WRITE_TOKEN"))
+# logfire.info('Hello, {place}!', place='World')
 
-
-from dotenv import load_dotenv
-import os
-
-# Cargar variables de entorno
-load_dotenv()
-from langfuse import Langfuse
 
 # langfuse = Langfuse(
 #   secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
@@ -40,17 +42,8 @@ MODEL_GPT = "openai/gpt-4o"
 
 llm = LiteLlm(model=MODEL_GPT)
 
-# Test LLM with a direct call
-print(llm.llm_client.completion(model=llm.model, 
-                                messages=[{"role": "user", 
-                                           "content": "Are you ready?"}], 
-                                tools=[]))
-
-print("\nOpenAI is ready for use.")
 # Sending a simple query to the database
 neo4j_is_ready = graphdb.send_query("RETURN 'Neo4j is Ready!' as message")
-
-print(neo4j_is_ready)
 
 # Define a basic tool -- send a parameterized cypher query
 def say_hello(person_name: str) -> dict:
@@ -83,5 +76,3 @@ hello_agent = Agent(
                 """,
     tools=[say_hello], # Pass the function directly
 )
-
-print(f"Agent '{hello_agent.name}' created.")

@@ -14,7 +14,7 @@ Replace `DemoAgent` with your real ADK agent implementation.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
 from ag_ui.core import RunAgentInput
 from fastapi import FastAPI, Request
@@ -49,21 +49,43 @@ except Exception:  # pragma: no cover - dev convenience
         state: dict[str, Any]
 
 from google.adk.agents import Agent
+from google.adk.sessions import InMemorySessionService
 
 class AdkAguiAgentServer:
     def __init__(self, agent: Agent, agui_main_path: str = "/agui") -> None:
         self.agent = agent
         self.agui_main_path = agui_main_path
 
+        
+
+
+    async def register_app(self, app: FastAPI, initialState: Optional[dict[str, Any]]) -> None:
+        
+        self.app_name = self.agent.name + "_app"
+        self.user_id = self.agent.name + "_user"
+        self.session_id = self.agent.name + "_session_01"
+            
+        # Initialize a session service and a session
+        session_service = InMemorySessionService()
+        self.session = await session_service.create_session(
+            app_name=self.app_name,
+            user_id=self.user_id,
+            session_id=self.session_id, 
+            state= {
+                **initialState
+            }
+        
+        
+        )
         # Main configuration context for the SSE service
         self.config_context = ConfigContext(
-            app_name="demo-app",  # Application identifier
+            app_name=self.app_name,  # Application identifier
             user_id=self.extract_user_id_main,  # User ID extraction for main endpoint
         )
 
         # SSE service handles the main chat/agent interaction endpoint
         self.sse_service = SSEService(
-            agent=agent,  # The agent that processes user requests
+            agent=self.agent,  # The agent that processes user requests
             config_context=self.config_context,  # Context extraction configuration
         )
 
@@ -72,7 +94,7 @@ class AdkAguiAgentServer:
             HistoryConfig(
                 app_name="demo-app",  # Must match SSE service app name
                 user_id=self.extract_user_id_history,  # User ID extraction for history endpoints
-                session_id=self.extract_session_id_history,  # Session/thread ID extraction
+                session_id=self.session.id if self.session else self.extract_session_id_history,  # Session/thread ID extraction
                 get_thread_list=self.format_thread_list,  # Custom thread list formatting
             )
         )
@@ -82,25 +104,8 @@ class AdkAguiAgentServer:
             StateConfig(
                 app_name="demo-app",  # Must match SSE service app name
                 user_id=self.extract_user_id_history,  # User ID extraction for state endpoints
-                session_id=self.extract_session_id_history,  # Session/thread ID extraction
+                session_id=self.session.id if self.session else self.extract_session_id_history,  # Session/thread ID extraction
             )
-        )
-
-
-    def register_app(self, app: FastAPI) -> None:
-
-        # CORS: allow local development frontends (http://localhost:3000 and 127.0.0.1)
-        # Adjust origins as needed for production.
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=[
-                "http://localhost:3000",
-                "http://127.0.0.1:3000",
-                "http://localhost:1111",
-            ],
-            allow_credentials=True,
-            allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-            allow_headers=["*"],
         )
 
         # Main SSE endpoint (POST) for running your agent
@@ -177,14 +182,3 @@ class AdkAguiAgentServer:
                 row["threadTitle"] = str(title)
             formatted.append(row)
         return formatted
-
-
-
-
-
-
-
-if __name__ == "__main__":  # pragma: no cover - manual run helper
-    import uvicorn
-
-    uvicorn.run("notebooks.run_hello_agent:app", host="0.0.0.0", port=1111, reload=True)

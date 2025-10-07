@@ -14,7 +14,8 @@ dependencies = [
     "langfuse (>=3.6.1,<4.0.0)",
     "neo4j (>=6.0.2,<7.0.0)",
     "adk-agui-middleware @ git+https://github.com/jvagliat/iax-adk-agui-middleware.git",
-    "ag-ui-protocol (>=0.1.9,<0.2.0)"
+    "ag-ui-protocol (>=0.1.9,<0.2.0)",
+    "logfire (>=4.11.0,<5.0.0)"
 ]
 
 
