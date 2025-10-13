@@ -38,6 +38,27 @@ reference = "HEAD"
 resolved_reference = "0422cc515c6ca114563f83526c902894730a6b46"
 
 [[package]]
+name = "ag-ui-adk"
+version = "0.3.1"
+description = ""
+optional = false
+python-versions = ">=3.12"
+groups = ["main"]
+files = [
+    {file = "ag_ui_adk-0.3.1-py3-none-any.whl", hash = "sha256:c534a6bcef1ea14d9505002340ec201a26d5552c5d1bb73f8ce49062e5d031b6"},
+    {file = "ag_ui_adk-0.3.1.tar.gz", hash = "sha256:2bed52eae4318be8ee81834f304e66c523de930134c4725cd87637ec87d872b8"},
+]
+
+[package.dependencies]
+ag-ui-protocol = ">=0.1.7"
+aiohttp = ">=3.12.0"
+asyncio = ">=3.4.3"
+fastapi = ">=0.115.2"
+google-adk = ">=1.14.0"
+pydantic = ">=2.11.7"
+uvicorn = ">=0.35.0"
+
+[[package]]
 name = "ag-ui-protocol"
 version = "0.1.9"
 description = ""
@@ -252,6 +273,18 @@ sniffio = ">=1.1"
 
 [package.extras]
 trio = ["trio (>=0.31.0)"]
+
+[[package]]
+name = "asyncio"
+version = "4.0.0"
+description = "Deprecated backport of asyncio; use the stdlib package instead"
+optional = false
+python-versions = ">=3.4"
+groups = ["main"]
+files = [
+    {file = "asyncio-4.0.0-py3-none-any.whl", hash = "sha256:c1eddb0659231837046809e68103969b2bef8b0400d59cfa6363f6b5ed8cc88b"},
+    {file = "asyncio-4.0.0.tar.gz", hash = "sha256:570cd9e50db83bc1629152d4d0b7558d6451bb1bfd5dfc2e935d96fc2f40329b"},
+]
 
 [[package]]
 name = "attrs"
@@ -5104,4 +5137,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13.1,<3.14"
-content-hash = "f2881e4b98e1bf4ff583f7acb67b52442b979b57cf912b25a18f1447a0675c48"
+content-hash = "be7e895a438e9a96fe87167b93a4734f5cc996f412690bf9b9f97f7795e44169"

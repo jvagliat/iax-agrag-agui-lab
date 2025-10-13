@@ -8,7 +8,7 @@ from google.adk.agents import LlmAgent, SequentialAgent
 from google.adk.tools import FunctionTool
 from typing import Any
 
-from agents.agrag.query_docs_tool import query_iax_documentation_rag
+from agents.agrag.query_iax_docs_tool import query_iax_documentation_rag
 from google.adk.models.lite_llm import LiteLlm
 
 # ==================== HERRAMIENTAS ====================
@@ -19,9 +19,12 @@ vector_search_tool = FunctionTool(
 # ==================== AGENTES ====================
 
 # 1️⃣ TRIAGE AGENT - Clasifica consultas (usando OpenAI)
+
+llm = LiteLlm(model="openai/gpt-4.1-mini", stream_options={"include_usage": True})
+
 triage_agent = LlmAgent(
     name="TriageAgent",
-    model=LiteLlm(model="openai/gpt-4.1-mini"),
+    model=llm,
     description="Clasifica consultas del usuario: GENERAL o SPECIFIC",
     instruction="""
     Eres un asistente que clasifica consultas de usuarios sobre iattraxia y la plataforma IAX.
@@ -44,16 +47,20 @@ triage_agent = LlmAgent(
     **Si es SPECIFIC**: Di algo como "Déjame buscar esa información en la documentación..."
 
     Sé conversacional y amigable.
+
+    ** Importante**: No inventes respuestas. Si no sabes, di que no sabes. 
+    Indicále al usuario que para preguntas específicas usarás la documentación oficial.
+    Indicale al usuario cuando decidas ejecutar algunas tareas o delegar a otro agente.
     """,
-    output_key="TriageAgent.triage_result",
-    sub_agents=[]  # Se configurará después
+    output_key="TriageAgent.response",
+    sub_agents=[],  # Se configurará después
 )
 
 
 # 2️⃣ QUERY GENERATOR - Genera múltiples consultas diversas
 query_generator_agent = LlmAgent(
     name="QueryGeneratorAgent",
-    model=LiteLlm(model="openai/gpt-4.1-mini"),
+    model=llm,
     description="Genera 3 consultas de búsqueda diversas para maximizar cobertura",
     instruction="""
     Eres un experto en formulación de consultas de búsqueda.
@@ -79,14 +86,14 @@ query_generator_agent = LlmAgent(
 
     """,
     output_key="QueryGeneratorAgent.generated_queries",
-    sub_agents=[]  # Se configurará después
+    sub_agents=[],  # Se configurará después
 )
 
 
 # 3️⃣ MULTI-RETRIEVAL AGENT - Ejecuta búsquedas con las 3 consultas
 multi_retrieval_agent = LlmAgent(
     name="MultiRetrievalAgent",
-    model=LiteLlm(model="openai/gpt-4.1-mini"),
+    model=llm,
     description="Ejecuta búsquedas vectoriales con las consultas generadas",
     instruction="""
     Eres un experto en recuperación de información.
@@ -98,26 +105,29 @@ multi_retrieval_agent = LlmAgent(
     2. USA la herramienta `vector_search` con CADA una de las 3 consultas
     3. Recopila todos los resultados obtenidos
 
+    ** Formato de salida**:
+    Devuelve un Json con un array answers que contenga TODOS los chunks recuperados por cada pregunta y me metadata
+    
     **Importante**:
     - Ejecuta las 3 búsquedas aunque algunas den resultados
     - Los resultados combinados darán mejor cobertura al Synthesizer
     """,
     output_key="MultiRetrievalAgent.retrieved_chunks",
     tools=[vector_search_tool],
-    sub_agents=[]  # Se configurará después
+    sub_agents=[],  # Se configurará después
 )
 
 
 # 4️⃣ SYNTHESIZER AGENT - Genera respuesta final con citas
 synthesizer_agent = LlmAgent(
     name="SynthesizerAgent",
-    model=LiteLlm(model="openai/gpt-4.1-mini"),
+    model=llm,
     description="Genera respuesta final integrando información de múltiples búsquedas",
     instruction="""
     Eres un redactor técnico experto especializado en iattraxia y la plataforma IAX.
 
     El usuario preguntó: (lee el mensaje original del usuario)
-    Los chunks recuperados de múltiples búsquedas están en: {retrieved_chunks}
+    Los chunks recuperados de múltiples búsquedas están en: {MultiRetrievalAgent.retrieved_chunks}
 
     **Tu trabajo**:
     1. Lee cuidadosamente TODOS los chunks recuperados de las diferentes consultas
@@ -139,7 +149,7 @@ synthesizer_agent = LlmAgent(
     - Adapta longitud según complejidad (1 párrafo a 5 párrafos máximo)
     - Si no hay suficiente información, admítelo y sugiere reformular la pregunta
     """,
-    output_key="MultiRetrievalAgent.final_response"
+    output_key="MultiRetrievalAgent.final_response",
 )
 
 
@@ -149,7 +159,7 @@ synthesizer_agent = LlmAgent(
 research_pipeline = SequentialAgent(
     name="ResearchPipeline",
     # instruction="Cada vez que avances en la secuencia ve USANDO transfer_to_agent al siguiente agente.",
-    sub_agents=[query_generator_agent, multi_retrieval_agent, synthesizer_agent]
+    sub_agents=[query_generator_agent, multi_retrieval_agent, synthesizer_agent],
 )
 
 # Triage tiene acceso al pipeline completo

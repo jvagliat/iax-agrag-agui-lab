@@ -7,7 +7,7 @@ from google.adk.agents import LlmAgent, SequentialAgent
 from google.adk.tools import FunctionTool
 from typing import Any
 
-from agents.agrag.query_docs_tool import query_iax_documentation_rag
+from iax_agrag_agui_lab.agents.agrag.query_iax_docs_tool import query_iax_documentation_rag
 
 # ==================== HERRAMIENTAS ====================
 vector_search_tool = FunctionTool(

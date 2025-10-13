@@ -93,5 +93,8 @@ if __name__ == "__main__":  # pragma: no cover - manual run helper
     import uvicorn
 
     uvicorn.run(
-        "src.iax_agrag_agui_lab.run_agents:app", host="0.0.0.0", port=1111, reload=True
+        "src.iax_agrag_agui_lab.run_agents:app", 
+        host="0.0.0.0", 
+        port=1111, 
+        reload=True
     )

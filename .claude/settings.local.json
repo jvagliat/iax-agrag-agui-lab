@@ -6,7 +6,20 @@
       "Bash(poetry add:*)",
       "Bash(venv\\Scripts\\python.exe -m pip install:*)",
       "Bash(.\\venv\\Scripts\\python.exe -m pip install:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Read(//c/Users/pablo/git/**)",
+      "Bash(poetry run:*)",
+      "Bash(curl -s http://127.0.0.1:2222/docs)",
+      "Bash(find:*)",
+      "Bash(curl -X GET http://127.0.0.1:2222/docs)",
+      "Bash(curl -X POST http://127.0.0.1:2222/chat -H \"Content-Type: application/json\" -d \"{\"\"message\"\": \"\"Hola\"\", \"\"thread_id\"\": \"\"test-123\"\"}\")",
+      "Bash(curl -s http://127.0.0.1:2222/openapi.json)",
+      "Bash(curl -X POST http://127.0.0.1:2222/agrag-official -H \"Content-Type: application/json\" -H \"Accept: text/event-stream\" -d \"{\"\"message\"\": \"\"Hola\"\", \"\"thread_id\"\": \"\"test-123\"\"}\" --no-buffer)",
+      "Bash(curl -X POST http://127.0.0.1:2222/agrag-official -H \"Content-Type: application/json\" -H \"Accept: text/event-stream\" -d \"{\"\"runId\"\":\"\"run-123\"\",\"\"state\"\":{},\"\"messages\"\":[{\"\"role\"\":\"\"user\"\",\"\"content\"\":\"\"Hola\"\"}],\"\"tools\"\":[],\"\"context\"\":[],\"\"forwardedProps\"\":{}}\" --no-buffer)",
+      "Bash(curl -X POST http://127.0.0.1:2222/agrag-official -H \"Content-Type: application/json\" -H \"Accept: text/event-stream\" -d \"{\"\"threadId\"\":\"\"thread-123\"\",\"\"runId\"\":\"\"run-123\"\",\"\"state\"\":{},\"\"messages\"\":[{\"\"user\"\":{\"\"id\"\":\"\"user1\"\"},\"\"role\"\":\"\"user\"\",\"\"content\"\":\"\"Hola\"\"}],\"\"tools\"\":[],\"\"context\"\":[],\"\"forwardedProps\"\":{}}\" --no-buffer)",
+      "Bash(curl -X POST http://127.0.0.1:2222/agrag-official -H \"Content-Type: application/json\" -H \"Accept: text/event-stream\" -d \"{\"\"threadId\"\":\"\"thread-123\"\",\"\"runId\"\":\"\"run-123\"\",\"\"state\"\":{},\"\"messages\"\":[{\"\"id\"\":\"\"msg1\"\",\"\"role\"\":\"\"user\"\",\"\"content\"\":\"\"Hola\"\"}],\"\"tools\"\":[],\"\"context\"\":[],\"\"forwardedProps\"\":{}}\" --no-buffer)"
     ],
     "deny": [],
     "ask": []
