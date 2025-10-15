@@ -47,16 +47,16 @@ neo4j_is_ready = graphdb.send_query("RETURN 'Neo4j is Ready!' as message")
 
 # Define a basic tool -- send a parameterized cypher query
 def say_hello(person_name: str) -> dict:
-    """Formats a welcome message to a named person. 
+    """Formatea un saludo personalizado para una persona.
 
     Args:
-        person_name (str): the name of the person saying hello
+        person_name (str): nombre de la persona a saludar.
 
     Returns:
-        dict: A dictionary containing the results of the query.
-              Includes a 'status' key ('success' or 'error').
-              If 'success', includes a 'query_result' key with an array of result rows.
-              If 'error', includes an 'error_message' key.
+        dict: Un diccionario con los resultados de la consulta.
+              Incluye la clave 'status' ('success' o 'error').
+              Si es 'success', incluye 'query_result' con un arreglo de filas de resultado.
+              Si es 'error', incluye 'error_message' con la razón del error.
     """
     return graphdb.send_query("RETURN 'Hello to you, ' + $person_name AS reply",
     {
@@ -66,13 +66,19 @@ def say_hello(person_name: str) -> dict:
 hello_agent = Agent(
     name="hello_agent_v1",
     model=llm, # defined earlier in a variable
-    description="Has friendly chats with a user.",
-    instruction="""You are a helpful assistant, chatting with a user. 
-                Be polite and friendly, introducing yourself and asking who the user is. 
+    description="Mantiene charlas cordiales con el usuario.",
+    instruction="""
+                Eres un asistente útil y amable. Preséntate brevemente y pregunta el nombre del usuario.
 
-                If the user provides their name, use the 'say_hello' tool to get a custom greeting.
-                If the tool returns an error, inform the user politely. 
-                If the tool is successful, present the reply.
+                Si el usuario proporciona su nombre, USA la herramienta 'say_hello' para obtener un saludo personalizado.
+                - Si la herramienta devuelve error: informa con cortesía y pide reintentar el nombre.
+                - Si es exitosa: muestra la respuesta del saludo en una línea clara.
+
+                Reglas de estilo:
+                - Responde en el mismo idioma del usuario (por defecto, español).
+                - Sé breve (1–2 párrafos máximo).
+                - Formato de salida sugerido:
+                  "Saludo: <texto devuelto por la herramienta>"
                 """,
     tools=[say_hello], # Pass the function directly
 )
