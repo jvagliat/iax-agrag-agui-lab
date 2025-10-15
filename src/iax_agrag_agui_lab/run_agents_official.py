@@ -72,9 +72,10 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+from agents.coordinator_agent import coordinator
 
 agent = ADKAgent(
-    adk_agent=agentic_rag_multi_query_bot,              # Required: The ADK agent to embed
+    adk_agent=coordinator,              # Required: The ADK agent to embed
     app_name_extractor=extract_app,
     user_id_extractor=extract_user,
 
@@ -92,30 +93,30 @@ from ag_ui_adk import add_adk_fastapi_endpoint
 add_adk_fastapi_endpoint(
     app,
     agent,
-    path="/agrag-official"  # Custom endpoint path
+    path="/coordinator"  # Custom endpoint path
 )
 
 # Multiple agents on different endpoints
 #add_adk_fastapi_endpoint(app, general_agent, path="agrag-official")
 # Register Workana RAG agent on a separate endpoint
-workana_agent = ADKAgent(
-    adk_agent=workana_rag_bot,
-    app_name_extractor=extract_app,
-    user_id_extractor=extract_user,
+# workana_agent = ADKAgent(
+#     adk_agent=workana_rag_bot,
+#     app_name_extractor=extract_app,
+#     user_id_extractor=extract_user,
 
-    session_timeout_seconds=1200,
-    cleanup_interval_seconds=300,
-    use_in_memory_services=True,
-    execution_timeout_seconds=600,
-    tool_timeout_seconds=300,
-    max_concurrent_executions=5,
-)
+#     session_timeout_seconds=1200,
+#     cleanup_interval_seconds=300,
+#     use_in_memory_services=True,
+#     execution_timeout_seconds=600,
+#     tool_timeout_seconds=300,
+#     max_concurrent_executions=5,
+# )
 
-add_adk_fastapi_endpoint(
-    app,
-    workana_agent,
-    path="/workana_rag"
-)
+# add_adk_fastapi_endpoint(
+#     app,
+#     workana_agent,
+#     path="/workana_rag"
+# )
 
 
 
