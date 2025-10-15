@@ -60,7 +60,7 @@ coordinator = LlmAgent(
     - Consultas de Workana (políticas, help desk, pagos, disputas) -> Workana RAG.
     - Consultas sobre iattraxia/IAX (arquitectura, funcionalidades, agentes) -> Agentic RAG Multi-Query.
     - Búsquedas generales en la web (noticias, conocimiento abierto) -> WebSearchAgent.
-    - Si tienes dudas, consulta al {PlatformSpecialist} usando `list_agents`.
+    - Si tienes dudas, consulta al PlatformSpecialist usando la herramienta `transfer_to_agent`.
 
     # Instrucciones
     - Explica brevemente al usuario tu lógica de delegación antes de transferir.
