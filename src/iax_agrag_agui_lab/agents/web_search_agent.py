@@ -1,9 +1,11 @@
 from agents.tools.tavily_search_tool import create_adk_tavily_search_tool
 from google.adk.agents import LlmAgent
+from google.adk.models.lite_llm import LiteLlm
+llm = LiteLlm(model="openai/gpt-4.1-mini", stream_options={"include_usage": True})
 
 web_search_agent = LlmAgent(
     name="WebSearchAgent",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Agente para responder preguntas usando búsqueda web (Tavily).",
     instruction="""
     Responderás preguntas consultando la web siempre usando la herramienta `tavily_search`.

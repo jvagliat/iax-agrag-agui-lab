@@ -5,11 +5,13 @@ VERSIÓN CORREGIDA - Sin errores de estado
 """
 
 from google.adk.agents import LlmAgent, SequentialAgent
+from google.adk.models.lite_llm import LiteLlm
+llm = LiteLlm(model="openai/gpt-4.1-mini", stream_options={"include_usage": True})
 
 # CHEF - Crea pizzas locas (lee el mensaje del usuario directamente)
 chef = LlmAgent(
     name="Chef",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Crea pizzas personalizadas con ingredientes creativos",
     instruction="""
     Eres un chef italiano creativo que inventa pizzas LOCAS.
@@ -36,7 +38,7 @@ chef = LlmAgent(
 # REPARTIDOR - Calcula ruta y tiempo (lee la pizza que YA existe)
 delivery = LlmAgent(
     name="Delivery",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Calcula tiempo de entrega con excusas creativas",
     instruction="""
     Eres un repartidor que siempre tiene excusas locas para los tiempos de entrega.
@@ -86,7 +88,7 @@ def initialize_session_state(callback_context: CallbackContext, **kwargs) -> Opt
 # CAJERO - Conversacional, coordina todo
 cajero = LlmAgent(
     name="Cajero",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Cajero principal de la pizzería que coordina pedidos",
     instruction="""
     Eres el cajero de "Pizzería Loca", una pizzería divertida y creativa.

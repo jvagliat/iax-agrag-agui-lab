@@ -14,7 +14,7 @@ files = [
 
 [[package]]
 name = "adk-agui-middleware"
-version = "1.3.3"
+version = "1.4.2"
 description = "Python middleware bridging Google ADK agents with AGUI protocol via Server-Sent Events for real-time agent interactions"
 optional = false
 python-versions = ">=3.10"
@@ -35,7 +35,7 @@ sse-starlette = ">=1.6.5"
 type = "git"
 url = "https://github.com/jvagliat/iax-adk-agui-middleware.git"
 reference = "HEAD"
-resolved_reference = "0422cc515c6ca114563f83526c902894730a6b46"
+resolved_reference = "c79849d202d373a321de0f049445e398c30f2267"
 
 [[package]]
 name = "ag-ui-adk"
@@ -2329,14 +2329,14 @@ openai = ["openai (>=0.27.8)"]
 
 [[package]]
 name = "langsmith"
-version = "0.4.32"
+version = "0.4.37"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "langsmith-0.4.32-py3-none-any.whl", hash = "sha256:5c4dcaa5049360bd126fec2fd59af703294e08c75c8d5363261f71a941fa2963"},
-    {file = "langsmith-0.4.32.tar.gz", hash = "sha256:a90bb8297fe0d3c63d9868ea58fe46c52d7e2d1f06b614e43c6a78c948275f24"},
+    {file = "langsmith-0.4.37-py3-none-any.whl", hash = "sha256:e34a94ce7277646299e4703a0f6e2d2c43647a28e8b800bb7ef82fd87a0ec766"},
+    {file = "langsmith-0.4.37.tar.gz", hash = "sha256:d9a0eb6dd93f89843ac982c9f92be93cf2bcabbe19957f362c547766c7366c71"},
 ]
 
 [package.dependencies]
@@ -2349,6 +2349,7 @@ requests-toolbelt = ">=1.0.0"
 zstandard = ">=0.23.0"
 
 [package.extras]
+claude-agent-sdk = ["claude-agent-sdk (>=0.1.0) ; python_version >= \"3.10\""]
 langsmith-pyo3 = ["langsmith-pyo3 (>=0.1.0rc2)"]
 openai-agents = ["openai-agents (>=0.0.3)"]
 otel = ["opentelemetry-api (>=1.30.0)", "opentelemetry-exporter-otlp-proto-http (>=1.30.0)", "opentelemetry-sdk (>=1.30.0)"]
@@ -5299,4 +5300,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13.1,<3.14"
-content-hash = "14fdd8e0a7f127569e5bac173ad65bd8e466b818e0ed7e5f8b8f32087b4a642d"
+content-hash = "23df51c8baafd3908a261d92e894a917f4d10cf8df7bd166d7f3d7f3d60c8700"

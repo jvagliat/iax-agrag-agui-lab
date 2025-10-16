@@ -67,6 +67,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:2222",
+        "http://localhost:8000",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
@@ -118,6 +119,15 @@ add_adk_fastapi_endpoint(
 #     path="/workana_rag"
 # )
 
+# Configure LangSmith tracing
+from langsmith.integrations.otel import configure
+import os
+configure(
+    api_key=os.getenv("LANGSMITH_API_KEY"),
+    project_name=os.getenv("LANGSMITH_PROJECT")
+)  
+
+# Optional: can also use LANGSMITH_PROJECT and LANGSMITH_API_KEY environment variables
 
 
 if __name__ == "__main__":

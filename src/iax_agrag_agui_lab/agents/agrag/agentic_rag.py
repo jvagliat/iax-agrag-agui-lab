@@ -14,11 +14,13 @@ vector_search_tool = FunctionTool(
 )
 
 # ==================== AGENTES ====================
+from google.adk.models.lite_llm import LiteLlm
+llm = LiteLlm(model="openai/gpt-4.1-mini", stream_options={"include_usage": True})
 
 # 1) TRIAGE AGENT - Clasifica consultas
 triage_agent = LlmAgent(
     name="TriageAgent",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Clasifica consultas del usuario: GENERAL o ESPECÍFICA",
     instruction="""
     Eres un asistente que clasifica consultas de usuarios.
@@ -40,7 +42,7 @@ triage_agent = LlmAgent(
 # 2) RETRIEVAL AGENT - Busca y evalúa información
 retrieval_agent = LlmAgent(
     name="RetrievalAgent",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Busca información relevante en la base de conocimiento",
     instruction="""
     Eres un experto en recuperación de información.
@@ -61,12 +63,14 @@ retrieval_agent = LlmAgent(
     tools=[vector_search_tool],
     sub_agents=[]  # Se configurará después
 )
+from google.adk.models.lite_llm import LiteLlm
+llm = LiteLlm(model="openai/gpt-4.1-mini", stream_options={"include_usage": True})
 
 
 # 3) SYNTHESIZER AGENT - Genera respuesta con citas
 synthesizer_agent = LlmAgent(
     name="SynthesizerAgent",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Redacta respuesta final citando fuentes",
     instruction="""
     Eres un redactor técnico experto.

@@ -68,11 +68,14 @@ Tienes acceso a la documentación en español mediante `hd_retriever(query: stri
 
 
 # ==================== AGENTES ====================
+from google.adk.models.lite_llm import LiteLlm
+
+llm = LiteLlm(model="openai/gpt-4.1-mini", stream_options={"include_usage": True})
 
 # 1) TRIAGE AGENT - Clasifica consultas
 triage_agent = LlmAgent(
     name="WorkanaTriageAgent",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Clasifica consultas del usuario: GENERAL o ESPECÍFICA (Workana)",
     instruction="""
     Eres un asistente que clasifica consultas de usuarios para el dominio de Workana.
@@ -88,7 +91,7 @@ triage_agent = LlmAgent(
 # 2) QUESTION GENERATOR - Formula 3 preguntas de clarificación
 question_generator = LlmAgent(
     name="WorkanaQuestionGenerator",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Genera EXACTAMENTE 3 preguntas de clarificación relevantes para la consulta",
     instruction="""
     Eres un asistente experto en recopilar contexto.
@@ -105,7 +108,7 @@ question_generator = LlmAgent(
 # 3) SEARCH QUERY GENERATOR - Convierte las 3 preguntas en 3-5 consultas de búsqueda
 search_query_generator = LlmAgent(
     name="WorkanaSearchQueryGenerator",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Genera entre 3 y 5 consultas de búsqueda para el Help Desk basadas en las 3 preguntas",
     instruction="""
     Recibes las 3 preguntas en: {QuestionGenerator.questions}
@@ -122,7 +125,7 @@ search_query_generator = LlmAgent(
 # 4) MULTI-RETRIEVAL AGENT - Ejecuta las búsquedas con hd_retriever
 multi_retrieval_agent = LlmAgent(
     name="WorkanaMultiRetrievalAgent",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Ejecuta búsquedas con las queries generadas y recopila resultados",
     instruction="""
     Las consultas generadas están en: {SearchQueryGenerator.search_queries}
@@ -145,7 +148,7 @@ multi_retrieval_agent = LlmAgent(
 # 5) SYNTHESIZER AGENT - Arma la respuesta final basándose en las 3 preguntas
 synthesizer_agent = LlmAgent(
     name="WorkanaSynthesizerAgent",
-    model="gemini-2.0-flash",
+    model=llm,
     description="Genera la respuesta final integrando las 3 preguntas y los resultados de búsqueda",
     instruction=f"""
     Eres un redactor experto en Workana.
