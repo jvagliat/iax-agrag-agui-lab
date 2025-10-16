@@ -1,14 +1,12 @@
 """
-🔍 Agentic RAG System - Multi-Query Version
-Sistema de RAG con Triage → Query Generation → Multi-Retrieval → Synthesis
-Usando OpenAI y estrategia multi-query inspirada en sistema legal
+Agentic RAG System - Versión Multi-Query
+Pipeline: Triage + Query Generation + Multi-Retrieval + Synthesis
 """
 
 from google.adk.agents import LlmAgent, SequentialAgent
 from google.adk.tools import FunctionTool
-from typing import Any
 
-from agents.agrag.query_docs_tool import query_iax_documentation_rag
+from agents.agrag.query_iax_docs_tool import query_iax_documentation_rag
 from google.adk.models.lite_llm import LiteLlm
 
 # ==================== HERRAMIENTAS ====================
@@ -18,141 +16,117 @@ vector_search_tool = FunctionTool(
 
 # ==================== AGENTES ====================
 
-# 1️⃣ TRIAGE AGENT - Clasifica consultas (usando OpenAI)
+# 1) TRIAGE AGENT - Clasifica consultas (OpenAI)
+llm = LiteLlm(model="openai/gpt-4.1-mini", stream_options={"include_usage": True})
+
 triage_agent = LlmAgent(
     name="TriageAgent",
-    model=LiteLlm(model="openai/gpt-4.1-mini"),
-    description="Clasifica consultas del usuario: GENERAL o SPECIFIC",
+    model=llm,
+    description="Clasifica consultas del usuario: GENERAL o ESPECÍFICA",
     instruction="""
-    Eres un asistente que clasifica consultas de usuarios sobre iattraxia y la plataforma IAX.
+    Eres un asistente que clasifica consultas sobre iattraxia y la plataforma IAX.
 
-    Analiza la pregunta del usuario y determina:
+    - GENERAL: saludos, cortesía, conversación casual, agradecimientos.
+    - ESPECÍFICA: preguntas sobre iattraxia, IAX, desarrollo de software con IA, agentes, automatizaciones.
 
-    - **GENERAL**: Saludos, preguntas simples, conversación casual, agradecimientos
-      Ejemplos: "hola", "¿cómo estás?", "gracias", "¿qué puedes hacer?", "buenos días"
+    Si es GENERAL: responde amigable y brevemente, preséntate como asistente de iattraxia/IAX.
+    Si es ESPECÍFICA: indica "Déjame buscar esa información en la documentación...".
 
-    - **SPECIFIC**: Preguntas específicas sobre:
-      * iattraxia (la empresa, servicios, equipo)
-      * Plataforma IAX (funcionalidades, arquitectura, uso)
-      * Desarrollo de software con IA
-      * Agentes autónomos o automatizaciones
-      * Tecnologías relacionadas
-
-    **Si es GENERAL**: Responde directamente de forma amigable y breve. Preséntate como
-    asistente especializado en iattraxia/IAX y ofrece ayuda.
-
-    **Si es SPECIFIC**: Di algo como "Déjame buscar esa información en la documentación..."
-
-    Sé conversacional y amigable.
+    Importante: No inventes. Si no sabes, dilo. Informa cuando ejecutes tareas o delegues.
     """,
-    output_key="TriageAgent.triage_result",
-    sub_agents=[]  # Se configurará después
+    output_key="TriageAgent.response",
+    sub_agents=[],
 )
 
 
-# 2️⃣ QUERY GENERATOR - Genera múltiples consultas diversas
+# 2) QUERY GENERATOR - Genera múltiples consultas diversas
 query_generator_agent = LlmAgent(
     name="QueryGeneratorAgent",
-    model=LiteLlm(model="openai/gpt-4.1-mini"),
-    description="Genera 3 consultas de búsqueda diversas para maximizar cobertura",
+    model=llm,
+    description="Genera EXACTAMENTE 3 consultas de búsqueda diversas",
     instruction="""
-    Eres un experto en formulación de consultas de búsqueda.
+    Eres experto en formular consultas de búsqueda.
 
-    El usuario preguntó: (lee el mensaje del usuario)
+    Genera EXACTAMENTE 3 consultas diferentes que cubran ángulos complementarios.
+    Devuelve SOLO un arreglo JSON con 3 strings. Sin texto adicional.
 
-    **Tu trabajo**:
-    Genera EXACTAMENTE 3 consultas de búsqueda diferentes para buscar información relevante.
-    Las consultas deben ser:
-    - **Diversas**: Enfocar diferentes aspectos de la pregunta
-    - **Específicas**: Usar términos técnicos relevantes (IAX, iattraxia, agentes, automatización, etc.)
-    - **Complementarias**: Cubrir diferentes ángulos de la misma necesidad
-
-    **Formato de salida**:
-    Devuelve SOLO las 3 consultas en un array de strings, sin explicaciones ni texto adicional.
-
-    Ejemplo de salida esperada:
+    Ejemplo:
     [
-        "funcionalidades de la plataforma IAX",
-        "arquitectura y componentes del sistema IAX",
-        "casos de uso de agentes autónomos en IAX"
+      "funcionalidades de la plataforma IAX",
+      "arquitectura y componentes del sistema IAX",
+      "casos de uso de agentes autónomos en IAX"
     ]
-
     """,
     output_key="QueryGeneratorAgent.generated_queries",
-    sub_agents=[]  # Se configurará después
+    sub_agents=[],
 )
 
 
-# 3️⃣ MULTI-RETRIEVAL AGENT - Ejecuta búsquedas con las 3 consultas
+# 3) MULTI-RETRIEVAL AGENT - Ejecuta búsquedas con las 3 consultas
 multi_retrieval_agent = LlmAgent(
     name="MultiRetrievalAgent",
-    model=LiteLlm(model="openai/gpt-4.1-mini"),
+    model=llm,
     description="Ejecuta búsquedas vectoriales con las consultas generadas",
     instruction="""
-    Eres un experto en recuperación de información.
-
     Las consultas generadas están en: {QueryGeneratorAgent.generated_queries}
 
-    **Tu trabajo**:
-    1. Lee las 3 consultas generadas
-    2. USA la herramienta `vector_search` con CADA una de las 3 consultas
-    3. Recopila todos los resultados obtenidos
+    Tareas:
+    1) Usa la herramienta `vector_search` con CADA una de las 3 consultas.
+    2) Reúne todos los resultados obtenidos.
 
-    **Importante**:
-    - Ejecuta las 3 búsquedas aunque algunas den resultados
-    - Los resultados combinados darán mejor cobertura al Synthesizer
+    Formato de salida (JSON estricto):
+    {
+      "retrieved_chunks": [
+         {"content": "...", "source": "...", "score": 0.0},
+         ...
+      ],
+      "by_query": {
+        "<consulta_1>": [ {"content": "...", "source": "..."}, ... ],
+        "<consulta_2>": [ ... ],
+        "<consulta_3>": [ ... ]
+      }
+    }
+
+    Notas:
+    - Ejecuta las 3 búsquedas aunque algunas den pocos resultados.
+    - Extrae "source" de la metadata de los documentos cuando esté disponible.
     """,
     output_key="MultiRetrievalAgent.retrieved_chunks",
     tools=[vector_search_tool],
-    sub_agents=[]  # Se configurará después
+    sub_agents=[],
 )
 
 
-# 4️⃣ SYNTHESIZER AGENT - Genera respuesta final con citas
+# 4) SYNTHESIZER AGENT - Genera respuesta final con citas
 synthesizer_agent = LlmAgent(
     name="SynthesizerAgent",
-    model=LiteLlm(model="openai/gpt-4.1-mini"),
-    description="Genera respuesta final integrando información de múltiples búsquedas",
+    model=llm,
+    description="Genera respuesta final integrando múltiples búsquedas",
     instruction="""
-    Eres un redactor técnico experto especializado en iattraxia y la plataforma IAX.
+    Los chunks recuperados de múltiples búsquedas están en: {MultiRetrievalAgent.retrieved_chunks}
 
-    El usuario preguntó: (lee el mensaje original del usuario)
-    Los chunks recuperados de múltiples búsquedas están en: {retrieved_chunks}
+    Tareas:
+    1) Lee TODOS los chunks recuperados.
+    2) Identifica complementariedades y elimina redundancias.
+    3) Redacta respuesta clara y bien estructurada.
+    4) Cita fuentes (título/ID y URL si existe) al final.
+    5) Si hay contradicciones, menciónalas.
+    6) Adapta longitud (1–5 párrafos máx.). Si no hay suficiente info, admítelo.
 
-    **Tu trabajo**:
-    1. Lee cuidadosamente TODOS los chunks recuperados de las diferentes consultas
-    2. Identifica información complementaria y elimina redundancias
-    3. Genera una respuesta clara, coherente y bien estructurada
-    4. CITA las fuentes usando formato: 📚 **Fuentes**: [fuente1], [fuente2]
-    5. Si la información es parcial o hay lagunas, indícalo explícitamente
-    6. Usa tono profesional pero accesible
-
-    **Formato de respuesta**:
-    - Usa **markdown** con viñetas, negritas para términos clave
-    - Estructura lógica: introducción → puntos principales → información complementaria
-    - Citas distribuidas en el texto cuando sea relevante
-    - Sección final "📚 **Fuentes**:" con lista de documentos consultados
-
-    **Reglas estrictas**:
-    - NO inventes información que no esté en los chunks
-    - Si múltiples chunks contradicen, menciona ambas perspectivas
-    - Adapta longitud según complejidad (1 párrafo a 5 párrafos máximo)
-    - Si no hay suficiente información, admítelo y sugiere reformular la pregunta
+    Formato de salida (Markdown):
+    - Respuesta estructurada (introducción + puntos principales + info complementaria)
+    - Sección final "Fuentes:" con una lista de referencias
     """,
-    output_key="MultiRetrievalAgent.final_response"
+    output_key="MultiRetrievalAgent.final_response",
 )
 
 
 # ==================== CONFIGURACIÓN DE SUB-AGENTES ====================
-
-# Pipeline: Query Generation → Multi-Retrieval → Synthesis
 research_pipeline = SequentialAgent(
     name="ResearchPipeline",
-    # instruction="Cada vez que avances en la secuencia ve USANDO transfer_to_agent al siguiente agente.",
-    sub_agents=[query_generator_agent, multi_retrieval_agent, synthesizer_agent]
+    sub_agents=[query_generator_agent, multi_retrieval_agent, synthesizer_agent],
 )
 
-# Triage tiene acceso al pipeline completo
 triage_agent.sub_agents = [research_pipeline]
 
 

@@ -88,10 +88,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Configure LangSmith tracing
+from langsmith.integrations.otel import configure
+import os
+configure(
+    api_key=os.getenv("LANGSMITH_API_KEY"),
+    project_name=os.getenv("LANGSMITH_PROJECT")
+)  
 
 if __name__ == "__main__":  # pragma: no cover - manual run helper
     import uvicorn
 
     uvicorn.run(
-        "src.iax_agrag_agui_lab.run_agents:app", host="0.0.0.0", port=1111, reload=True
+        "src.iax_agrag_agui_lab.run_agents:app", 
+        host="0.0.0.0",
+        port=8000,
+        reload=True
     )

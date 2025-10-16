@@ -5,12 +5,16 @@ from langchain_core.documents import Document
 from google.adk.agents import Agent
 from typing import List
 
-async def query_iax_documentation_rag(question: str) -> List[Document]:
-    """A tool that research the IAX ("la plataforma") documentation to find relevant
-    information to answer the user's question.
+async def query_iax_documentation_rag(question: str, top_k: int = 5) -> List[Document]:
+    """Busca en la documentación de IAX ("la plataforma") para encontrar
+    información relevante que responda la pregunta del usuario.
 
     Params:
-        question: The question to search for.
+        question: Pregunta a buscar.
+        top_k: Número máximo de documentos a recuperar (por defecto 5).
+
+    Returns:
+        List[Document]: Lista de documentos relevantes (con metadata de fuente cuando esté disponible).
     """
     pinecone_vector_store = Pinecone.from_existing_index(
         index_name="iax-documentation",
@@ -21,16 +25,12 @@ async def query_iax_documentation_rag(question: str) -> List[Document]:
     )
     retrived_documents = pinecone_vector_store.similarity_search(
         question,
+        k=top_k,
         namespace="iax-documentation-namespace",
-    )  
+    )
     print("--------------------------------")
-    print(f"se esta buscando la pregunta: {question}")
+    print(f"Buscando: {question}")
+    print(f"Documentos encontrados: {len(retrived_documents)}")
     print("--------------------------------")
-    print(f"se encontraron {len(retrived_documents)} documentos")
-    print(retrived_documents)
-    print("--------------------------------")
-
-    # def format_docs(docs):
-    #     return "\n\n ********* \n\n".join([d.page_content for d in docs])
 
     return retrived_documents
