@@ -6,6 +6,7 @@ from google.adk.agents import LlmAgent, BaseAgent
 from agents.agrag.agentic_rag_multi_query import agentic_rag_multi_query_bot
 from agents.agrag.workana_rag_agent import workana_rag_bot
 from agents.web_search_agent import web_search_agent
+from agents.coder_agent import coder_agent
 
 
 class AgentData:
@@ -46,6 +47,7 @@ def get_platform_agents() -> List[dict]:
         AgentData(agentic_rag_multi_query_bot),
         AgentData(workana_rag_bot),
         AgentData(web_search_agent),
+        AgentData(coder_agent),
     ]
     # FunctionTool expects JSON-serializable outputs; return plain dicts.
     return [a.to_dict() for a in agents]
@@ -96,6 +98,7 @@ coordinator = LlmAgent(
         workana_rag_bot,
         web_search_agent,
         platform_specialist,
+        coder_agent,
     ]
 )
 
