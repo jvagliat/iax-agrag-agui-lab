@@ -1,11 +1,9 @@
 
 from langchain_pinecone import Pinecone
 from langchain_openai import OpenAIEmbeddings
-from langchain_core.documents import Document
-from google.adk.agents import Agent
 from typing import List
 
-async def query_iax_documentation_rag(question: str, top_k: int = 5) -> List[Document]:
+async def query_iax_documentation_rag(question: str, top_k: int = 5) -> List[dict]:
     """Busca en la documentación de IAX ("la plataforma") para encontrar
     información relevante que responda la pregunta del usuario.
 
@@ -14,7 +12,7 @@ async def query_iax_documentation_rag(question: str, top_k: int = 5) -> List[Doc
         top_k: Número máximo de documentos a recuperar (por defecto 5).
 
     Returns:
-        List[Document]: Lista de documentos relevantes (con metadata de fuente cuando esté disponible).
+        List[dict]: Lista de documentos relevantes como dicts (con metadata de fuente cuando esté disponible).
     """
     pinecone_vector_store = Pinecone.from_existing_index(
         index_name="iax-documentation",
@@ -33,4 +31,5 @@ async def query_iax_documentation_rag(question: str, top_k: int = 5) -> List[Doc
     print(f"Documentos encontrados: {len(retrived_documents)}")
     print("--------------------------------")
 
-    return retrived_documents
+    # Convert Documents to dicts to make them JSON serializable
+    return [doc.model_dump() for doc in retrived_documents]

@@ -9,7 +9,7 @@ from google.adk.tools import FunctionTool
 from agents.agrag.query_workana_docs_tool import query_workana_documentation_rag
 
 # ==================== HERRAMIENTAS ====================
-hd_retriever = FunctionTool(
+workana_helpdesk_retriever = FunctionTool(
     func=query_workana_documentation_rag,
 )
 
@@ -24,11 +24,11 @@ Sé siempre amable y conciso. Solo saluda si te han saludado.
 # Tarea
 Asiste al usuario con sus preguntas. Cuentas con:
 - Los "datos del usuario", etiquetados como `<user></user>`
-- El Help Desk accesible a través del tool de búsqueda semántica `hd_retriever`
+- El Help Desk accesible a través del tool de búsqueda semántica `workana_helpdesk_retriever`
 - La descripción de estructura y operación, hechos condicionales, etc. que complementan el Help Desk y están explicados en este "## Contexto - Workana" y subitems
 
 Importante:
-- No puedes responder preguntas fuera del ámbito de Workana. Fundamenta tus respuestas solo en la información provista aquí y en el Help Desk vía `hd_retriever`.
+- No puedes responder preguntas fuera del ámbito de Workana. Fundamenta tus respuestas solo en la información provista aquí y en el Help Desk vía `workana_helpdesk_retriever`.
 - Si no sabes la respuesta, di "No sé" o "No tengo esa información".
 - Workana NO TIENE APP MÓVIL.
 
@@ -49,7 +49,7 @@ Importante:
 - La comunicación externa solo es válida con el proyecto en estado TRABAJANDO.
 
 ### Help Desk
-Tienes acceso a la documentación en español mediante `hd_retriever(query: string): doc[]`.
+Tienes acceso a la documentación en español mediante `workana_helpdesk_retriever(query: string): doc[]`.
 
 ## Contexto - Sesión de Usuario
 `<user>{{ JSON.stringify($json.user_input) }}</user>`
@@ -81,26 +81,9 @@ triage_agent = LlmAgent(
     Eres un asistente que clasifica consultas de usuarios para el dominio de Workana.
 
     Si la consulta es GENERAL: responde de forma breve y amable.
-    Si la consulta es ESPECÍFICA: indica "Déjame buscar esa información para ti..." y luego usa transfer_to_agent para llamar a 'RetrievalAgent'.
+    Si la consulta es ESPECÍFICA: indica "Déjame buscar esa información para ti..." y luego usa transfer_to_agent para llamar a 'WorkanaResearchPipeline'.
     """,
-    output_key="triage_result",
-    sub_agents=[],
-)
-
-
-# 2) QUESTION GENERATOR - Formula 3 preguntas de clarificación
-question_generator = LlmAgent(
-    name="WorkanaQuestionGenerator",
-    model=llm,
-    description="Genera EXACTAMENTE 3 preguntas de clarificación relevantes para la consulta",
-    instruction="""
-    Eres un asistente experto en recopilar contexto.
-
-    Genera EXACTAMENTE 3 preguntas de seguimiento que, de ser respondidas,
-    permitirían dar una respuesta precisa y completa. Sin explicaciones ni comentarios.
-    Devuelve las 3 preguntas en un arreglo JSON de strings.
-    """,
-    output_key="QuestionGenerator.questions",
+    output_key="WorkanaTriageAgent.triage_result",
     sub_agents=[],
 )
 
@@ -109,20 +92,21 @@ question_generator = LlmAgent(
 search_query_generator = LlmAgent(
     name="WorkanaSearchQueryGenerator",
     model=llm,
-    description="Genera entre 3 y 5 consultas de búsqueda para el Help Desk basadas en las 3 preguntas",
+    description="Genera 3 consultas de búsqueda para el Help Desk basadas en las 3 preguntas",
     instruction="""
     Recibes las 3 preguntas en: {QuestionGenerator.questions}
 
-    - Genera entre 3 y 5 queries de búsqueda semántica optimizadas para recuperar artículos relevantes del Help Desk.
+    - Genera entre 3 queries de búsqueda semántica optimizadas para recuperar artículos relevantes del Help Desk.
     - Las queries deben ser concisas, en español y cubrir ángulos distintos.
-    - Devuelve SOLO un array JSON de strings con las queries, sin texto adicional.
+    - Devuelve SOLO un array JSON de strings con las queries, sin texto adicional:
+    { queries: [...{question: "...", optmized_question: "..." }...]}
     """,
     output_key="SearchQueryGenerator.search_queries",
     sub_agents=[],
 )
 
 
-# 4) MULTI-RETRIEVAL AGENT - Ejecuta las búsquedas con hd_retriever
+# 4) MULTI-RETRIEVAL AGENT - Ejecuta las búsquedas con workana_helpdesk_retriever
 multi_retrieval_agent = LlmAgent(
     name="WorkanaMultiRetrievalAgent",
     model=llm,
@@ -131,7 +115,7 @@ multi_retrieval_agent = LlmAgent(
     Las consultas generadas están en: {SearchQueryGenerator.search_queries}
 
     Tareas:
-    1) Ejecuta `hd_retriever` para CADA query (3–5 consultas).
+    1) Ejecuta `workana_helpdesk_retriever` para CADA query (3–5 consultas).
     2) Recolecta los documentos retornados y agrúpalos.
     3) Devuelve un JSON con la estructura:
        {"retrieved_chunks": [...], "by_query": {"query1": [...], ...}}
@@ -140,7 +124,7 @@ multi_retrieval_agent = LlmAgent(
     Extrae "source" de metadata cuando esté disponible.
     """,
     output_key="MultiRetrievalAgent.retrieved_chunks",
-    tools=[hd_retriever],
+    tools=[workana_helpdesk_retriever],
     sub_agents=[],
 )
 
@@ -163,8 +147,9 @@ synthesizer_agent = LlmAgent(
     Tu trabajo:
     1) Si las 3 preguntas requieren respuesta del usuario, preséntalas primero y espera respuesta (si el sistema lo permite). Si no, procede con la mejor información disponible.
     2) Integra la información encontrada en los chunks para responder la consulta.
-    3) Cita las fuentes al final usando: "Fuentes:" con lista (título/ID y URL si existe).
+    3) Cita las fuentes al final usando: "Fuentes [i]:" con lista (título/ID y URL si existe).
     4) Si la información es parcial o contradictoria, indícalo.
+    5) Utiliza un formato markdown y separa en secciones
 
     Reglas:
     - Comienza planteando EXACTAMENTE las 3 preguntas generadas (sección separada) para solicitar más contexto.
@@ -172,15 +157,15 @@ synthesizer_agent = LlmAgent(
     - Finaliza con la sección "Fuentes:" listando documentos consultados.
     - Si no sabes, di "No sé" o "No tengo esa información".
     """,
-    output_key="final_response",
+    output_key="WorkanaSynthesizerAgent.final_response",
 )
 
 
 # ==================== CONFIGURACIÓN DE SUB-AGENTES ====================
 
-research_pipeline = SequentialAgent(
+research_pipeline = LlmAgent(
     name="WorkanaResearchPipeline",
-    sub_agents=[question_generator, search_query_generator, multi_retrieval_agent, synthesizer_agent],
+    sub_agents=[search_query_generator, multi_retrieval_agent, synthesizer_agent],
 )
 
 triage_agent.sub_agents = [research_pipeline]

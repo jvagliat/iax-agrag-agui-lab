@@ -5,7 +5,7 @@ from langchain_core.documents import Document
 from google.adk.agents import Agent
 from typing import List
 
-async def query_workana_documentation_rag(question: str, top_k: int = 5) -> List[Document]:
+async def query_workana_documentation_rag(question: str, top_k: int = 2) -> List[dict]:
     """Busca en el Help Desk de Workana para encontrar información relevante.
 
     Params:
@@ -13,7 +13,7 @@ async def query_workana_documentation_rag(question: str, top_k: int = 5) -> List
         top_k: Número máximo de documentos a recuperar (por defecto 5).
 
     Returns:
-        List[Document]: Lista de documentos relevantes (con metadata de fuente cuando esté disponible).
+        List[dict]: Lista de documentos relevantes como dicts (con metadata de fuente cuando esté disponible).
     """
     pinecone_vector_store = Pinecone.from_existing_index(
         index_name="iax-workana-discord-doc-files",
@@ -32,4 +32,5 @@ async def query_workana_documentation_rag(question: str, top_k: int = 5) -> List
     print(f"Documentos encontrados: {len(retrived_documents)}")
     print("--------------------------------")
 
-    return retrived_documents
+    # Convert Documents to dicts to make them JSON serializable
+    return [doc.model_dump() for doc in retrived_documents]

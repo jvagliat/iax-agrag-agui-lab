@@ -14,15 +14,15 @@ load_dotenv()
 # Configure logging BEFORE any other imports
 import logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.ERROR,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
 # Component-specific loggers for ADK middleware
-logging.getLogger('adk_agent').setLevel(logging.INFO)
-logging.getLogger('event_translator').setLevel(logging.INFO)
-logging.getLogger('session_manager').setLevel(logging.INFO)
-logging.getLogger('endpoint').setLevel(logging.INFO)
+logging.getLogger('adk_agent').setLevel(logging.ERROR)
+logging.getLogger('event_translator').setLevel(logging.ERROR)
+logging.getLogger('session_manager').setLevel(logging.ERROR)
+logging.getLogger('endpoint').setLevel(logging.ERROR)
 
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
@@ -100,24 +100,24 @@ add_adk_fastapi_endpoint(
 # Multiple agents on different endpoints
 #add_adk_fastapi_endpoint(app, general_agent, path="agrag-official")
 # Register Workana RAG agent on a separate endpoint
-# workana_agent = ADKAgent(
-#     adk_agent=workana_rag_bot,
-#     app_name_extractor=extract_app,
-#     user_id_extractor=extract_user,
+workana_agent = ADKAgent(
+    adk_agent=workana_rag_bot,
+    app_name_extractor=extract_app,
+    user_id_extractor=extract_user,
 
-#     session_timeout_seconds=1200,
-#     cleanup_interval_seconds=300,
-#     use_in_memory_services=True,
-#     execution_timeout_seconds=600,
-#     tool_timeout_seconds=300,
-#     max_concurrent_executions=5,
-# )
+    session_timeout_seconds=1200,
+    cleanup_interval_seconds=300,
+    use_in_memory_services=True,
+    execution_timeout_seconds=600,
+    tool_timeout_seconds=300,
+    max_concurrent_executions=5,
+)
 
-# add_adk_fastapi_endpoint(
-#     app,
-#     workana_agent,
-#     path="/workana_rag"
-# )
+add_adk_fastapi_endpoint(
+    app,
+    workana_agent,
+    path="/workana_rag"
+)
 
 # Configure LangSmith tracing
 from langsmith.integrations.otel import configure

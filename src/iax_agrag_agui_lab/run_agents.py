@@ -35,6 +35,7 @@ from agents.pizza_agent import pizzeria_bot
 from agents.agrag.agentic_rag import agentic_rag_bot
 
 from agents.agrag.agentic_rag_multi_query import agentic_rag_multi_query_bot
+from agents.agrag.workana_rag_agent import workana_rag_bot
 
 
 @asynccontextmanager
@@ -70,6 +71,18 @@ async def lifespan(app: FastAPI):
             "final_response": "",
         },
     )
+
+    await AdkAguiAgentServer(
+            workana_rag_bot, agui_main_path="/workana_rag"
+    ).register_app(
+        app,
+        initialState={
+            "triage_result": "",
+            "retrieved_chunks": "",
+            "final_response": "",
+        },
+    )
+
     yield
     # Shutdown (si necesitas limpiar algo)
 
