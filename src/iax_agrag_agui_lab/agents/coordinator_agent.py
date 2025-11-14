@@ -71,6 +71,10 @@ platform_specialist = LlmAgent(
     )],
     output_key="PlatformSpecialist.plataform",
 )
+def get_weather(location: str) -> str:
+    """Get weather information for a location."""
+    return f"Weather in {location}: Sunny, 71°F"
+
 
 
 # Create parent agent and assign children via sub_agents
@@ -99,7 +103,10 @@ coordinator = LlmAgent(
         web_search_agent,
         platform_specialist,
         coder_agent,
-    ]
+    ], 
+    tools=[FunctionTool(
+        func=get_weather,
+    )],
 )
 
 # Framework automatically sets:

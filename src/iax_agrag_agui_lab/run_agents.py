@@ -36,7 +36,7 @@ from agents.agrag.agentic_rag import agentic_rag_bot
 
 from agents.agrag.agentic_rag_multi_query import agentic_rag_multi_query_bot
 from agents.agrag.workana_rag_agent import workana_rag_bot
-
+from agents.coordinator_agent import coordinator
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -82,6 +82,18 @@ async def lifespan(app: FastAPI):
             "final_response": "",
         },
     )
+
+    await AdkAguiAgentServer(
+            coordinator, agui_main_path="/coordinator"
+    ).register_app(
+        app,
+        initialState={
+            "triage_result": "",
+            "retrieved_chunks": "",
+            "final_response": "",
+        },
+    )
+
 
     yield
     # Shutdown (si necesitas limpiar algo)

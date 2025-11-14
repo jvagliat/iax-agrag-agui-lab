@@ -163,7 +163,7 @@ synthesizer_agent = LlmAgent(
 
 # ==================== CONFIGURACIÓN DE SUB-AGENTES ====================
 
-research_pipeline = LlmAgent(
+research_pipeline = SequentialAgent(
     name="WorkanaResearchPipeline",
     sub_agents=[search_query_generator, multi_retrieval_agent, synthesizer_agent],
 )
